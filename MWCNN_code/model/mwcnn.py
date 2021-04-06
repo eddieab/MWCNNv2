@@ -3,8 +3,10 @@ import torch
 import torch.nn as nn
 import scipy.io as sio
 
+
 def make_model(args, parent=False):
     return MWCNN(args)
+
 
 class MWCNN(nn.Module):
     def __init__(self, args, conv=common.default_conv):
@@ -24,7 +26,6 @@ class MWCNN(nn.Module):
         m_head = [common.BBlock(conv, nColor, n_feats, kernel_size, act=act)]
         d_l0 = []
         d_l0.append(common.DBlock_com1(conv, n_feats, n_feats, kernel_size, act=act, bn=False))
-
 
         d_l1 = [common.BBlock(conv, n_feats * 4, n_feats * 2, kernel_size, act=act, bn=False)]
         d_l1.append(common.DBlock_com1(conv, n_feats * 2, n_feats * 2, kernel_size, act=act, bn=False))
@@ -71,4 +72,3 @@ class MWCNN(nn.Module):
 
     def set_scale(self, scale_idx):
         self.scale_idx = scale_idx
-

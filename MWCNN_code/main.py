@@ -11,7 +11,7 @@ from trainer import Trainer
 
 
 
-torch.set_num_threads(12)
+torch.set_num_threads(20)
 torch.manual_seed(args.seed)
 checkpoint = utility.checkpoint(args)
 

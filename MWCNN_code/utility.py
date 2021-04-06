@@ -5,15 +5,17 @@ import datetime
 from functools import reduce
 
 import matplotlib
+
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 
 import numpy as np
-import scipy.misc as misc
+import imageio
 
 import torch
 import torch.optim as optim
 import torch.optim.lr_scheduler as lrs
+
 
 class timer():
     def __init__(self):
@@ -38,6 +40,7 @@ class timer():
     def reset(self):
         self.acc = 0
 
+
 class checkpoint():
     def __init__(self, args):
         self.args = args
@@ -46,7 +49,8 @@ class checkpoint():
         now = datetime.datetime.now().strftime('%Y-%m-%d-%H:%M:%S')
 
         if args.load == '.':
-            if args.save == '.': args.save = now
+            if args.save == '.':
+                args.save = now
             self.dir = 'experiment/' + args.save
         else:
             self.dir = 'experiment/' + args.load
@@ -124,16 +128,18 @@ class checkpoint():
         filename = '{}/results/{}_x{}_{}'.format(self.dir, filename, scale, idx)
         postfix = ('SR', 'LR', 'HR')
         for v, p in zip(save_list, postfix):
-            normalized = v[0].data.mul(255 / self.args.rgb_range)
-            #print(normalized.size())
+            normalized = v[0].data.mul(65535 / self.args.rgb_range)
+            # print(normalized.size())
             ndarr = normalized.byte().permute(1, 2, 0).cpu().numpy()
-            #print(ndarr.shape)
-            
-            misc.imsave('{}{}.png'.format(filename, p), np.squeeze(ndarr))
+            # print(ndarr.shape)
+
+            imageio.imwrite('{}{}.tif'.format(filename, p), np.squeeze(ndarr))
+
 
 def quantize(img, rgb_range):
-    pixel_range = 255 / rgb_range
-    return img.mul(pixel_range).clamp(0, 255).round().div(pixel_range)
+    pixel_range = 65535 / rgb_range
+    return img.mul(pixel_range).clamp(0, 65535).round().div(pixel_range)
+
 
 def calc_psnr(sr, hr, scale, rgb_range, benchmark=False):
     diff = (sr - hr).data.div(rgb_range)
@@ -143,7 +149,7 @@ def calc_psnr(sr, hr, scale, rgb_range, benchmark=False):
         convert[0, 0, 0, 0] = 65.738
         convert[0, 1, 0, 0] = 129.057
         convert[0, 2, 0, 0] = 25.064
-        diff.mul_(convert).div_(256)
+        diff.mul_(convert).div_(65536)
         diff = diff.sum(dim=1, keepdim=True)
     '''
     if benchmark:
@@ -163,6 +169,7 @@ def calc_psnr(sr, hr, scale, rgb_range, benchmark=False):
 
     return -10 * math.log10(mse)
 
+
 def make_optimizer(args, my_model):
     trainable = filter(lambda x: x.requires_grad, my_model.parameters())
 
@@ -181,8 +188,9 @@ def make_optimizer(args, my_model):
 
     kwargs['lr'] = args.lr
     kwargs['weight_decay'] = args.weight_decay
-    
+
     return optimizer_function(trainable, **kwargs)
+
 
 def make_scheduler(args, my_optimizer):
     if args.decay_type == 'step':
@@ -202,4 +210,3 @@ def make_scheduler(args, my_optimizer):
         )
 
     return scheduler
-

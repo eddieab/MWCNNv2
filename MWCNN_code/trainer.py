@@ -11,6 +11,8 @@ from tqdm import tqdm
 import scipy.io as sio
 from data import common
 import numpy as np
+
+
 # import model
 
 class Trainer():
@@ -27,7 +29,6 @@ class Trainer():
         self.optimizer = utility.make_optimizer(args, self.model)
         self.scheduler = utility.make_scheduler(args, self.optimizer)
 
-
         if self.args.load != '.':
             self.optimizer.load_state_dict(
                 torch.load(os.path.join(ckp.dir, 'optimizer.pt'))
@@ -36,16 +37,12 @@ class Trainer():
 
         self.error_last = 1e5
 
-
-
     def train(self):
         self.scheduler.step()
 
         self.loss.step()
 
-
         epoch = self.scheduler.last_epoch + 1
-
 
         lr = self.scheduler.get_lr()[0]
 
@@ -56,7 +53,6 @@ class Trainer():
         self.model.train()
         # self.model_NLEst.train()
         # self.model_KMEst.train()
-
 
         timer_data, timer_model = utility.timer(), utility.timer()
         for batch, (lr, hr, _) in enumerate(self.loader_train):
@@ -99,7 +95,7 @@ class Trainer():
         epoch = self.scheduler.last_epoch + 1
         self.ckp.write_log('\nEvaluation:')
         # kernel_test = sio.loadmat('data/Compared_kernels_JPEG_noise_x234.mat')
-        scale_list = self.scale #[2,3,4,8]
+        scale_list = self.scale  # [2,3,4,8]
         self.ckp.add_log(torch.zeros(1, len(scale_list)))
         self.model.eval()
         no_eval = 0
@@ -123,9 +119,9 @@ class Trainer():
                         lr, hr = self.prepare([lr, hr])
                     else:
                         lr = self.prepare([lr])[0]
-                    #sz = lr.size()
-                    #scale_tensor = torch.ones([1, 1, sz[2], sz[3]]).float() * (2.0 / 80)
-                    
+                    # sz = lr.size()
+                    # scale_tensor = torch.ones([1, 1, sz[2], sz[3]]).float() * (2.0 / 80)
+
                     # print(lr.size())
                     # hr_ = torch.squeeze(hr_)
                     # hr_ = hr_.numpy()
@@ -151,9 +147,6 @@ class Trainer():
                     if self.args.save_results:
                         self.ckp.save_results(filename, save_list, idx_img, scale)
 
-
-
-
                 self.ckp.log[-1, idx_scale] = eval_acc / len(self.loader_test)
                 best = self.ckp.log.max(0)
                 self.ckp.write_log(
@@ -174,10 +167,12 @@ class Trainer():
 
     def prepare(self, l, volatile=False):
         device = torch.device('cpu' if self.args.cpu else 'cuda')
+
         def _prepare(tensor):
-            if self.args.precision == 'half': tensor = tensor.half()
+            if self.args.precision == 'half':
+                tensor = tensor.bfloat16()
             return tensor.to(device)
-           
+
         return [_prepare(_l) for _l in l]
 
     def terminate(self):
@@ -187,4 +182,3 @@ class Trainer():
         else:
             epoch = self.scheduler.last_epoch + 1
             return epoch >= self.args.epochs
-

@@ -9,7 +9,7 @@ parser.add_argument('--template', default='.',
                     help='You can set various templates in option.py')
 
 # Hardware specifications
-parser.add_argument('--n_threads', type=int, default=12,
+parser.add_argument('--n_threads', type=int, default=20,
                     help='number of threads for data loading')
 parser.add_argument('--cpu', action='store_true',
                     help='use cpu only')
@@ -27,7 +27,7 @@ parser.add_argument('--data_train', type=str, default='DIV2K',
                     help='train dataset name')
 parser.add_argument('--data_test', type=str, default='Set5',
                     help='test dataset name')
-parser.add_argument('--img_ext', type=str, default='.bmp',
+parser.add_argument('--img_ext', type=str, default='.tif',
                     help='test dataset type')
 parser.add_argument('--benchmark_noise', action='store_true',
                     help='use noisy benchmark sets')
@@ -41,7 +41,7 @@ parser.add_argument('--ext', type=str, default='sep_reset',
                     help='dataset file extension')
 parser.add_argument('--scale', default='2',
                     help='super resolution scale')
-parser.add_argument('--patch_size', type=int, default=384,
+parser.add_argument('--patch_size', type=int, default=192,
                     help='output patch size')
 parser.add_argument('--rgb_range', type=int, default=1,
                     help='maximum value of RGB')
@@ -72,7 +72,7 @@ parser.add_argument('--res_scale', type=float, default=1,
                     help='residual scaling')
 parser.add_argument('--shift_mean', default=True,
                     help='subtract pixel mean from the input')
-parser.add_argument('--precision', type=str, default='single',
+parser.add_argument('--precision', type=str, default='half',
                     choices=('single', 'half'),
                     help='FP precision for test (single | half)')
 
