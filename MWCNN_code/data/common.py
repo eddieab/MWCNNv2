@@ -170,20 +170,28 @@ def get_patch_hdr(target):
 
     mosaiced = np.clip(noisy * mask, 0, 65535)
 
-    # saturate up to 2 photographic stops above SDR clip
-    sat_point = np.random.uniform(1, 2 ** 2)
+    # saturate up to 3 photographic stops above SDR clip
+    sat_point = np.random.uniform(1, 2 ** 3)
     scaled = mosaiced / mosaiced.max() * sat_point
     saturated = scaled
 
     # simulate different channels clipping
+    clip = [0, 0, 0]
     if random.random() > 0.5:
+        clip[0] = 1
         saturated[:, :, 0] = np.clip(saturated[:, :, 0], 0, 1)
     if random.random() > 0.33:
+        clip[1] = 1
         saturated[:, :, 1] = np.clip(saturated[:, :, 1], 0, 1)
     if random.random() > 0.5:
+        clip[2] = 1
         saturated[:, :, 2] = np.clip(saturated[:, :, 2], 0, 1)
 
     target = target / target.max() * sat_point
+
+    # if all three channels saturate, avoid reconstruction to prevent artifacts
+    if np.sum(clip) == 3:
+        target = np.clip(target, 0, 1)
 
     return saturated, target
 
