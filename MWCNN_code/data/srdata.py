@@ -1,11 +1,10 @@
 import os
 
+import imageio
 from data import common
 
 import numpy as np
-import scipy.misc as misc
 import scipy.io as sio
-from scipy.misc import imresize
 
 import torch
 import torch.utils.data as data
@@ -49,18 +48,12 @@ class SRData(data.Dataset):
     def __getitem__(self, idx):
         hr, filename = self._load_file(idx)
         if self.train:
-
             lr, hr, scale = self._get_patch(hr, filename)
-
             lr_tensor, hr_tensor = common.np2Tensor([lr, hr], self.args.rgb_range)
             return lr_tensor, hr_tensor, filename
         else:
-            # scale = 2
-            # scale = self.scale[self.idx_scale]
             lr, hr, _ = self._get_patch(hr, filename)
-
             lr_tensor, hr_tensor = common.np2Tensor([lr, hr], self.args.rgb_range)
-
             return lr_tensor, hr_tensor, filename
 
     def __len__(self):
@@ -76,8 +69,7 @@ class SRData(data.Dataset):
 
         if self.args.ext == 'img' or self.benchmark:
             filename = hr
-
-            hr = misc.imread(hr)
+            hr = imageio.imread(hr)
         elif self.args.ext.find('sep') >= 0:
             filename = hr
             # lr = np.load(lr)
@@ -134,12 +126,10 @@ class SRData(data.Dataset):
                     hr, patch_size, scale
                 )
             return lr, hr, scale
-            # lr = common.add_noise(lr, self.args.noise)
 
     def _get_patch_test(self, hr, scale):
-
         ih, iw = hr.shape[0:2]
-        lr = imresize(imresize(hr, [int(ih / scale), int(iw / scale)], 'bicubic'), [ih, iw], 'bicubic')
+        lr = hr # imresize(imresize(hr, [int(ih / scale), int(iw / scale)], 'bicubic'), [ih, iw], 'bicubic')
         ih = ih // 8 * 8
         iw = iw // 8 * 8
         hr = hr[0:ih, 0:iw, :]

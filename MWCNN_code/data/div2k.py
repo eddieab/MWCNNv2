@@ -9,10 +9,11 @@ import scipy.misc as misc
 import torch
 import torch.utils.data as data
 
+
 class DIV2K(srdata.SRData):
     def __init__(self, args, train=True):
         super(DIV2K, self).__init__(args, train)
-        self.repeat = 1#args.test_every // (args.n_train // args.batch_size)
+        self.repeat = 1  # args.test_every // (args.n_train // args.batch_size)
 
     def _scan(self):
         # list_hr = []
@@ -37,25 +38,25 @@ class DIV2K(srdata.SRData):
             #     #     ))
             #
             list_hr.sort()
-    # #     list_hr = []
-    #     # list_lr = [[] for _ in self.scale]
-    #     if self.train:
-    #         idx_begin = 0
-    #         idx_end = self.args.n_train
-    #     else:
-    #         idx_begin = self.args.n_train
-    #         idx_end = self.args.offset_val + self.args.n_val
-    #
-    #     for i in range(idx_begin + 1, idx_end + 1):
-    #         filename = '{:0>4}'.format(i)
-    #         list_hr.append(os.path.join(self.dir_hr, filename + self.ext))
-    #         # for si, s in enumerate(self.scale):
-    #         #     list_lr[si].append(os.path.join(
-    #         #         self.dir_lr,
-    #         #         'X{}/{}x{}{}'.format(s, filename, s, self.ext)
-    #         #     ))
-    #
-        return list_hr#[i for i in range(self.num)]#, list_lr
+        # #     list_hr = []
+        #     # list_lr = [[] for _ in self.scale]
+        #     if self.train:
+        #         idx_begin = 0
+        #         idx_end = self.args.n_train
+        #     else:
+        #         idx_begin = self.args.n_train
+        #         idx_end = self.args.offset_val + self.args.n_val
+        #
+        #     for i in range(idx_begin + 1, idx_end + 1):
+        #         filename = '{:0>4}'.format(i)
+        #         list_hr.append(os.path.join(self.dir_hr, filename + self.ext))
+        #         # for si, s in enumerate(self.scale):
+        #         #     list_lr[si].append(os.path.join(
+        #         #         self.dir_lr,
+        #         #         'X{}/{}x{}{}'.format(s, filename, s, self.ext)
+        #         #     ))
+        #
+        return list_hr  # [i for i in range(self.num)]#, list_lr
 
     # def _set_filesystem(self, dir_data):
     #     self.apath = dir_data #+ '/DIV2K'
@@ -88,4 +89,3 @@ class DIV2K(srdata.SRData):
             return idx % len(self.images_hr)
         else:
             return idx
-
