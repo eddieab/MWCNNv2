@@ -148,10 +148,12 @@ def get_img_compress(img_tar, quality_factor):
 
 
 def get_patch_hdr(target):
-    # shot noise
+    # shot and read noise
     if random.random() > 0.5:
         scale = np.random.uniform(1, 2 ** 9)
-        noisy = np.random.poisson(target / scale) * scale
+        read = np.random.uniform(0, 2 ** -4)
+        shot = np.random.poisson(target / scale) * scale
+        noisy = shot + np.sqrt(read) * np.random.standard_normal(target.shape)
     else:
         noisy = target
 
