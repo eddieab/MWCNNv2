@@ -1,0 +1,1 @@
+python main.py --model MWCNN --save hdrd --scale 15 --n_feats 64 --save_results --print_model --patch_size 192 --batch_size 16 --print_every 100 --lr 1.024e-4 --lr_decay 100 --n_colors 3 --save_models --pre_train experiment/hdrd/model/MWCNNmodel_latest.pt --task_type HDRD

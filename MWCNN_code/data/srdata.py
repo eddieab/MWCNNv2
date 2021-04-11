@@ -20,7 +20,7 @@ class SRData(data.Dataset):
         self.scale = args.scale
         self.idx_scale = 0
 
-        if train:
+        if train and False:
             mat = h5py.File('../MWCNN/imdb_gray.mat')
             self.args.ext = 'mat'
             self.hr_data = mat['images']['labels'][:, :, :, :]
@@ -122,9 +122,7 @@ class SRData(data.Dataset):
                     hr, patch_size, scale
                 )
             if self.args.task_type == 'HDRD':
-                lr, hr = common.get_img_hdr(
-                    hr, patch_size, scale
-                )
+                lr, hr = common.get_img_hdr(hr)
             return lr, hr, scale
 
     def _get_patch_test(self, hr, scale):

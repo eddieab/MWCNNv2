@@ -84,9 +84,9 @@ class checkpoint():
         # trainer.model_NLEst.save(self.dir, epoch, 'NL_EST', is_best=is_best)
         # trainer.model_KMEst.save(self.dir, epoch, 'KM_EST', is_best=is_best)
         trainer.loss.save(self.dir)
-        trainer.loss.plot_loss(self.dir, epoch)
+        #trainer.loss.plot_loss(self.dir, epoch)
 
-        self.plot_psnr(epoch)
+        #self.plot_psnr(epoch)
         torch.save(self.log, os.path.join(self.dir, 'psnr_log.pt'))
         torch.save(
             trainer.optimizer.state_dict(),
@@ -128,12 +128,21 @@ class checkpoint():
         filename = '{}/results/{}_x{}_{}'.format(self.dir, filename, scale, idx)
         postfix = ('SR', 'LR', 'HR')
         for v, p in zip(save_list, postfix):
-            normalized = v[0].data.mul(65535 / self.args.rgb_range)
+            #normalized = v[0].data.mul(65535 / self.args.rgb_range)
             # print(normalized.size())
-            ndarr = normalized.byte().permute(1, 2, 0).cpu().numpy()
+            ndarr = v[0].data.permute(1, 2, 0).cpu().numpy()
             # print(ndarr.shape)
 
-            imageio.imwrite('{}{}.tif'.format(filename, p), np.squeeze(ndarr))
+            imageio.imwrite('{}{}.tif'.format(filename, p), hlg(np.squeeze(ndarr)))
+
+
+def hlg(img):
+    img[img < 0] = 0
+    mask = img > 1
+    img[mask] = 0.17883277 * np.log(img[mask] - 0.28466892) + 0.55881073
+    img[~mask] = 0.5 * np.sqrt(img[~mask])
+
+    return np.uint16(np.round(np.clip(img * 65535, 0, 65535)))
 
 
 def quantize(img, rgb_range):

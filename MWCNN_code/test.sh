@@ -1,0 +1,1 @@
+python main.py --model MWCNN --scale 15 --n_feats 64 --save_results --print_model --n_colors 3 --test_only --self_ensemble --resume -1 --pre_train experiment/hdrd/model --data_test test --task_type HDRD

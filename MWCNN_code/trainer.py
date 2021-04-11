@@ -38,10 +38,6 @@ class Trainer():
         self.error_last = 1e5
 
     def train(self):
-        self.scheduler.step()
-
-        self.loss.step()
-
         epoch = self.scheduler.last_epoch + 1
 
         lr = self.scheduler.get_lr()[0]
@@ -90,6 +86,9 @@ class Trainer():
 
         self.loss.end_log(len(self.loader_train))
         self.error_last = self.loss.log[-1, -1]
+
+        self.scheduler.step()
+        self.loss.step()
 
     def test(self):
         epoch = self.scheduler.last_epoch + 1
@@ -170,7 +169,7 @@ class Trainer():
 
         def _prepare(tensor):
             if self.args.precision == 'half':
-                tensor = tensor.bfloat16()
+                tensor = tensor.half()
             return tensor.to(device)
 
         return [_prepare(_l) for _l in l]

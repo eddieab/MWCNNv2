@@ -9,8 +9,6 @@ import loss
 from option import args
 from trainer import Trainer
 
-
-
 torch.set_num_threads(20)
 torch.manual_seed(args.seed)
 checkpoint = utility.checkpoint(args)
@@ -25,7 +23,6 @@ if checkpoint.ok:
     # args.model = 'BSR'
     model = model.Model(args, checkpoint)
 
-
     loader = data.Data(args)
     loss = loss.Loss(args, checkpoint) if not args.test_only else None
     t = Trainer(args, loader, model, loss, checkpoint)
@@ -34,4 +31,3 @@ if checkpoint.ok:
         t.test()
 
     checkpoint.done()
-

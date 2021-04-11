@@ -195,7 +195,15 @@ def get_patch_hdr(target):
     if np.sum(clip) == 3:
         target = np.clip(target, 0, 1)
 
-    return saturated, target
+    return saturated * 65535, target * 65535
+
+
+def get_img_hdr(target):
+    ih, iw = target.shape[0:2]
+    ih = int(ih // 8 * 8)
+    iw = int(iw // 8 * 8)
+    target = target[0:ih, 0:iw, :]
+    return get_patch_hdr(target)
 
 
 def set_channel(l, n_channel):
@@ -208,7 +216,6 @@ def set_channel(l, n_channel):
             img = np.expand_dims(sc.rgb2ycbcr(img)[:, :, 0], 2)
         elif n_channel == 3 and c == 1:
             img = np.concatenate([img] * n_channel, 2)
-
         return img
 
     return [_set_channel(_l) for _l in l]
@@ -217,7 +224,7 @@ def set_channel(l, n_channel):
 def np2Tensor(l, rgb_range):
     def _np2Tensor(img):
         np_transpose = np.ascontiguousarray(img.transpose((2, 0, 1)))
-        tensor = torch.from_numpy(np_transpose).bfloat16()
+        tensor = torch.from_numpy(np_transpose).float()
         tensor.mul_(rgb_range / 65535.0)
 
         return tensor
@@ -226,7 +233,7 @@ def np2Tensor(l, rgb_range):
 
 
 def add_noise(x, noise='.'):
-    if noise is not '.':
+    if noise != '.':
         noise_type = noise[0]
         noise_value = int(noise[1:])
         if noise_type == 'G':
