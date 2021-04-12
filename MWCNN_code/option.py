@@ -118,7 +118,7 @@ parser.add_argument('--weight_decay', type=float, default=0,
                     help='weight decay')
 
 # Loss specifications
-parser.add_argument('--loss', type=str, default='1*MSE',
+parser.add_argument('--loss', type=str, default='0.84*MSSIM+0.16*GL1',
                     help='loss function configuration')
 parser.add_argument('--skip_threshold', type=float, default='1e6',
                     help='skipping batch that has large error')

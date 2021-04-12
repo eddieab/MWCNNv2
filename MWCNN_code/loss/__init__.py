@@ -9,6 +9,7 @@ import numpy as np
 
 import torch
 import torch.nn as nn
+from pytorch_msssim import MS_SSIM
 import torch.nn.functional as F
 
 class Loss(nn.modules.loss._Loss):
@@ -25,6 +26,10 @@ class Loss(nn.modules.loss._Loss):
                 loss_function = nn.MSELoss()
             elif loss_type == 'L1':
                 loss_function = nn.L1Loss()
+            elif loss_type == 'GL1':
+                loss_function = nn.L1Loss(reduction='none')
+            elif loss_type == 'MSSIM':
+                loss_function = MS_SSIM(data_range=1.0, size_average=True, channel=3)
             elif loss_type.find('VGG') >= 0:
                 module = import_module('loss.vgg')
                 loss_function = getattr(module, 'VGG')(
@@ -70,7 +75,17 @@ class Loss(nn.modules.loss._Loss):
         losses = []
         for i, l in enumerate(self.loss):
             if l['function'] is not None:
-                loss = l['function'](sr, hr)
+                if l['type'] == 'MSSIM':
+                    loss = 1 - l['function'](sr, hr)
+                elif l['type'] == 'GL1':
+                    x, y = np.meshgrid(np.linspace(-sr.shape[3]/2, sr.shape[3]/2+1, sr.shape[3]), np.linspace(-sr.shape[2]/2, sr.shape[2]/2+1, sr.shape[2]))
+                    d = np.sqrt(x * x + y * y)
+                    gaussian = torch.from_numpy(np.exp(-(d ** 2 / (2.0 * 8 ** 2)))).cuda()
+                    gaussian = gaussian.expand_as(sr)
+                    # gaussian = torch.from_numpy(np.random.normal(0, 8, sr.shape)).cuda()
+                    loss = (l['function'](sr, hr) * gaussian).mean()
+                else:
+                    loss = l['function'](sr, hr)
                 effective_loss = l['weight'] * loss
                 losses.append(effective_loss)
                 self.log[-1, i] += effective_loss.item()
@@ -98,7 +113,10 @@ class Loss(nn.modules.loss._Loss):
         n_samples = batch + 1
         log = []
         for l, c in zip(self.loss, self.log[-1]):
-            log.append('[{}: {:.4f}]'.format(l['type'], c / n_samples))
+            if l['type'] == 'GL1':
+                log.append('[{}: {:.4f}]'.format('1000•GL1', 1000 * c / n_samples))
+            else:
+                log.append('[{}: {:.4f}]'.format(l['type'], c / n_samples))
 
         return ''.join(log)
 
