@@ -128,8 +128,6 @@ class Trainer():
 
                     sr = self.model(lr, idx_scale)
 
-                    sr = utility.quantize(sr, self.args.rgb_range)
-
                     save_list = [sr]
                     eval_acc += utility.calc_psnr(
                         sr, hr, scale, self.args.rgb_range,
