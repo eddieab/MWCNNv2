@@ -26,9 +26,7 @@ class Loss(nn.modules.loss._Loss):
                 loss_function = nn.MSELoss()
             elif loss_type == 'L1':
                 loss_function = nn.L1Loss()
-            elif loss_type == 'GL1':
-                loss_function = nn.L1Loss(reduction='none')
-            elif loss_type == 'MSSIM':
+            elif loss_type == 'MSSSIM':
                 loss_function = MS_SSIM(data_range=1.0, size_average=True, channel=3)
             elif loss_type.find('VGG') >= 0:
                 module = import_module('loss.vgg')
@@ -75,15 +73,8 @@ class Loss(nn.modules.loss._Loss):
         losses = []
         for i, l in enumerate(self.loss):
             if l['function'] is not None:
-                if l['type'] == 'MSSIM':
+                if l['type'] == 'MSSSIM':
                     loss = 1 - l['function'](sr, hr)
-                elif l['type'] == 'GL1':
-                    x, y = np.meshgrid(np.linspace(-sr.shape[3]/2, sr.shape[3]/2+1, sr.shape[3]), np.linspace(-sr.shape[2]/2, sr.shape[2]/2+1, sr.shape[2]))
-                    d = np.sqrt(x * x + y * y)
-                    gaussian = torch.from_numpy(np.exp(-(d ** 2 / (2.0 * 8 ** 2)))).cuda()
-                    gaussian = gaussian.expand_as(sr)
-                    # gaussian = torch.from_numpy(np.random.normal(0, 8, sr.shape)).cuda()
-                    loss = (l['function'](sr, hr) * gaussian).mean()
                 else:
                     loss = l['function'](sr, hr)
                 effective_loss = l['weight'] * loss

@@ -25,7 +25,7 @@ parser.add_argument('--dir_demo', type=str, default='../test',
                     help='demo image directory')
 parser.add_argument('--data_train', type=str, default='train',
                     help='train dataset name')
-parser.add_argument('--data_test', type=str, default='test',
+parser.add_argument('--data_test', type=str, default='val',
                     help='test dataset name')
 parser.add_argument('--img_ext', type=str, default='.tif',
                     help='test dataset type')
@@ -118,7 +118,7 @@ parser.add_argument('--weight_decay', type=float, default=0,
                     help='weight decay')
 
 # Loss specifications
-parser.add_argument('--loss', type=str, default='0.84*MSSIM+0.16*GL1',
+parser.add_argument('--loss', type=str, default='1*MSE',
                     help='loss function configuration')
 parser.add_argument('--skip_threshold', type=float, default='1e6',
                     help='skipping batch that has large error')

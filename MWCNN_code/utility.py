@@ -158,7 +158,7 @@ def calc_psnr(sr, hr, scale, rgb_range, benchmark=False):
         convert[0, 0, 0, 0] = 65.738
         convert[0, 1, 0, 0] = 129.057
         convert[0, 2, 0, 0] = 25.064
-        diff.mul_(convert).div_(65536)
+        diff.mul_(convert).div_(rgb_range)
         diff = diff.sum(dim=1, keepdim=True)
     '''
     if benchmark:

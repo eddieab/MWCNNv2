@@ -14,7 +14,7 @@ class Data:
             kwargs['collate_fn'] = default_collate
             kwargs['pin_memory'] = False
 
-        self.loader_train = self.loader_train = DataLoader(
+        self.loader_train = DataLoader(
                 hdrd.HDRD(args),
                 batch_size=args.batch_size,
                 shuffle=True,

@@ -48,11 +48,11 @@ class SRData(data.Dataset):
     def __getitem__(self, idx):
         hr, filename = self._load_file(idx)
         if self.train:
-            lr, hr, scale = self._get_patch(hr, filename)
+            lr, hr, scale = self._get_patch(hr)
             lr_tensor, hr_tensor = common.np2Tensor([lr, hr], self.args.rgb_range)
             return lr_tensor, hr_tensor, filename
         else:
-            lr, hr, _ = self._get_patch(hr, filename)
+            lr, hr, _ = self._get_patch(hr)
             lr_tensor, hr_tensor = common.np2Tensor([lr, hr], self.args.rgb_range)
             return lr_tensor, hr_tensor, filename
 
@@ -85,7 +85,7 @@ class SRData(data.Dataset):
 
         return hr, filename
 
-    def _get_patch(self, hr, filename):
+    def _get_patch(self, hr):
         patch_size = self.args.patch_size
 
         if self.train:
