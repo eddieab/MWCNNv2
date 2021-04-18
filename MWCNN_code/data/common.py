@@ -16,7 +16,6 @@ import time
 import imageio
 from scipy.ndimage import convolve
 from PIL import Image
-import random
 
 
 def get_patch_noise(img_tar, patch_size, noise_level):
@@ -148,15 +147,6 @@ def get_img_compress(img_tar, quality_factor):
 
 
 def get_patch_hdr(target):
-    # shot and read noise
-    if random.random() > 0.5:
-        scale = np.random.uniform(1, 2 ** 9)
-        read = np.random.uniform(0, 2 ** -4)
-        shot = np.random.poisson(target / scale) * scale
-        noisy = shot + np.sqrt(read) * np.random.standard_normal(target.shape)
-    else:
-        noisy = target
-
     # mosaic
     mask = np.zeros_like(target)
 
@@ -170,12 +160,38 @@ def get_patch_hdr(target):
     # blue
     mask[1::2, 1::2, 2] = 1
 
+
+    pgn = False
+    # shot and read noise
+    if random.random() > 0.5:
+        pgn = True
+        scale = np.random.uniform(1, 2 ** 8)
+        read = np.random.uniform(0, 2 ** -4)
+
+        # get full noisy image as lr
+        shot = np.random.poisson(target / scale) * scale
+        noisy = shot + np.sqrt(read) * np.random.standard_normal(target.shape)
+        noisy = np.clip(noisy, 0, 65535)
+
+        # get mosaic noise channel for parameterization
+        mosaic = np.sum(target * mask, axis=2)
+        mshot = np.random.poisson(mosaic / scale) * scale
+        noise = mshot + np.sqrt(read) * np.random.standard_normal(mosaic.shape)
+        noise = noise - mosaic
+    else:
+        noisy = target
+        noise = np.zeros((target.shape[0], target.shape[1]))
+
     mosaiced = np.clip(noisy * mask, 0, 65535)
 
-    # saturate up to 3 photographic stops above SDR clip
-    sat_point = np.random.uniform(1, 2 ** 3)
+    # saturate up to 3x SDR clip
+    # white balance multipliers rarely fall outside this range
+    sat_point = np.random.uniform(1, 2 ** 2)
     scaled = mosaiced / mosaiced.max() * sat_point
     saturated = scaled
+
+    if pgn:
+        noise = noise / noise.max() * sat_point
 
     # simulate different channels clipping
     clip = [0, 0, 0]
@@ -191,9 +207,14 @@ def get_patch_hdr(target):
 
     target = target / target.max() * sat_point
 
-    # if all three channels saturate, avoid reconstruction to prevent artifacts
+    if np.sum(clip) > 0:
+        noise = np.clip(noise, 0, 1)
+
+    # if all three channels saturate, avoid reconstruction to prevent hallucination
     if np.sum(clip) == 3:
         target = np.clip(target, 0, 1)
+
+    saturated = np.dstack((saturated, noise))
 
     return saturated * 65535, target * 65535
 

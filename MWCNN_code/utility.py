@@ -128,12 +128,26 @@ class checkpoint():
         filename = '{}/results/{}_x{}_{}'.format(self.dir, filename, scale, idx)
         postfix = ('SR', 'LR', 'HR')
         for v, p in zip(save_list, postfix):
-            #normalized = v[0].data.mul(65535 / self.args.rgb_range)
-            # print(normalized.size())
             ndarr = v[0].data.permute(1, 2, 0).cpu().numpy()
-            # print(ndarr.shape)
 
-            imageio.imwrite('{}{}.tif'.format(filename, p), hlg(np.squeeze(ndarr)))
+            if p == 'LR':
+                bayer = np.sum(np.squeeze(ndarr[:, :, :-1]), axis=2)
+                # generate shape for first 2x2 bin
+                s = (int(bayer.shape[0] / 2), int(bayer.shape[1] / 2))
+
+                # there are two green channels in CFA
+                # average them for first binning step
+                g = np.mean([bayer[::2, 1::2], bayer[1::2, ::2]], axis=0).reshape(s)
+
+                # extract remaining channels
+                r = np.reshape(bayer[::2, ::2], s)
+                b = np.reshape(bayer[1::2, 1::2], s)
+
+                rgb = np.dstack((r, g, b))
+                imageio.imwrite('{}{}.tif'.format(filename, p), hlg(rgb))
+                imageio.imwrite('{}{}.tif'.format(filename, 'NS'), hlg(np.squeeze(ndarr[:, :, -1])))
+            else:
+                imageio.imwrite('{}{}.tif'.format(filename, p), hlg(np.squeeze(ndarr)))
 
 
 def hlg(img):

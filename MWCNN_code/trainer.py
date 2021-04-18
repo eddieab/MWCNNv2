@@ -33,7 +33,8 @@ class Trainer():
             self.optimizer.load_state_dict(
                 torch.load(os.path.join(ckp.dir, 'optimizer.pt'))
             )
-            for _ in range(len(ckp.log)): self.scheduler.step()
+            for _ in range(len(ckp.log)):
+                self.scheduler.step()
 
         self.error_last = 1e5
 

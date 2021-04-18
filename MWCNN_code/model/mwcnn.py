@@ -23,7 +23,7 @@ class MWCNN(nn.Module):
         self.IWT = common.IWT()
 
         n = 1
-        m_head = [common.BBlock(conv, nColor, n_feats, kernel_size, act=act)]
+        m_head = [common.BBlock(conv, 4, n_feats, kernel_size, act=act)]
         d_l0 = []
         d_l0.append(common.DBlock_com1(conv, n_feats, n_feats, kernel_size, act=act, bn=False))
 
@@ -66,7 +66,7 @@ class MWCNN(nn.Module):
         x_ = self.IWT(self.pro_l3(self.DWT(x2))) + x2
         x_ = self.IWT(self.i_l2(x_)) + x1
         x_ = self.IWT(self.i_l1(x_)) + x0
-        x = self.tail(self.i_l0(x_)) + x
+        x = self.tail(self.i_l0(x_)) + x[:, :-1, :, :]
 
         return x
 
